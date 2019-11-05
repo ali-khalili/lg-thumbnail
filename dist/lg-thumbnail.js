@@ -149,10 +149,11 @@
             _this.$thumbOuter.css('height', _this.core.s.thumbContHeight + 'px');
         }
 
-        function getThumb(src, thumb, index) {
+        function getThumb(src, thumb, thumbLazy, index) {
             var isVideo = _this.core.isVideo(src, index) || {};
             var thumbImg;
             var vimeoId = '';
+            var imageSrc;
 
             if (isVideo.youtube || isVideo.vimeo || isVideo.dailymotion) {
                 if (isVideo.youtube) {
@@ -179,26 +180,36 @@
                 thumbImg = thumb;
             }
 
-            thumbList += '<div data-vimeo-id="' + vimeoId + '" class="lg-thumb-item" style="width:' + _this.core.s.thumbWidth + 'px; height: ' + _this.core.s.thumbHeight + '; margin-right: ' + _this.core.s.thumbMargin + 'px"><img src="' + thumbImg + '" /></div>';
+            if (thumbLazy != null) {
+                imageSrc = '<img class="lazy" src="' + thumbImg + '" data-src="' + thumbLazy + '"  />';
+            } else {
+                imageSrc = '<img src="' + thumbImg + '" />';
+            }
+            thumbList += '<div data-vimeo-id="' + vimeoId + '" class="lg-thumb-item" style="width:' + _this.core.s.thumbWidth + 'px; height: ' + _this.core.s.thumbHeight + '; margin-right: ' + _this.core.s.thumbMargin + 'px">' + imageSrc + '</div>';
+
             vimeoId = '';
         }
 
         if (_this.core.s.dynamic) {
             for (var i = 0; i < _this.core.s.dynamicEl.length; i++) {
-                getThumb(_this.core.s.dynamicEl[i].src, _this.core.s.dynamicEl[i].thumb, i);
+                getThumb(_this.core.s.dynamicEl[i].src, _this.core.s.dynamicEl[i].thumb, null, i);
             }
         } else {
             _this.core.$items.each(function(i) {
 
+                var lazyThumbnail = null;
+                if ($(this).find('img').data('src-lazy')) {
+                    lazyThumbnail = $(this).find('img').data('src-lazy');
+                }
+
                 if (!_this.core.s.exThumbImage) {
-                    getThumb($(this).attr('href') || $(this).attr('data-src'), $(this).find('img').attr('src'), i);
+                    getThumb($(this).attr('href') || $(this).attr('data-src'), $(this).find('img').attr('src'), lazyThumbnail, i);
                 } else {
-                    getThumb($(this).attr('href') || $(this).attr('data-src'), $(this).attr(_this.core.s.exThumbImage), i);
+                    getThumb($(this).attr('href') || $(this).attr('data-src'), $(this).attr(_this.core.s.exThumbImage), lazyThumbnail, i);
                 }
 
             });
         }
-
         _this.core.$outer.find('.lg-thumb').html(thumbList);
 
         $thumb = _this.core.$outer.find('.lg-thumb-item');
